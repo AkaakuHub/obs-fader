@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBS VJ Controller</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>VJ Opacity Controller</h1>
+            <div class="status-container">
+                <div class="status" id="status-indicator">
+                    <div class="light"></div>
+                    <span id="status-text">Connecting...</span>
+                </div>
+                <div class="button-group">
+                    <button id="reconnect-btn" class="reconnect-btn" disabled>再接続</button>
+                    <button id="reload-btn" class="reload-btn">リロード</button>
+                </div>
+            </div>
+        </header>
+
+        <main id="controls">
+            <div class="source-control" id="control-pip1">
+                <label for="pip1-fader">pip1</label>
+                <input type="range" id="pip1-fader" class="fader" min="0" max="100" value="100">
+                <span class="fader-value" id="pip1-value">100%</span>
+                <button id="pip1-solo-btn" class="solo-btn">SOLO</button>
+            </div>
+
+            <div class="source-control" id="control-pip2">
+                <label for="pip2-fader">pip2</label>
+                <input type="range" id="pip2-fader" class="fader" min="0" max="100" value="100">
+                <span class="fader-value" id="pip2-value">100%</span>
+                <button id="pip2-solo-btn" class="solo-btn">SOLO</button>
+            </div>
+
+            <div class="source-control" id="control-vdj">
+                <label for="vdj-fader">vdj</label>
+                <input type="range" id="vdj-fader" class="fader" min="0" max="100" value="100">
+                <span class="fader-value" id="vdj-value">100%</span>
+                <button id="vdj-solo-btn" class="solo-btn">SOLO</button>
+            </div>
+        </main>
+        
+        <footer>
+            <p id="error-message"></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/obs-websocket-js@5.0.4/dist/obs-ws.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

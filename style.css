@@ -1,0 +1,198 @@
+:root {
+    --bg-color: #2c3e50;
+    --primary-color: #3498db;
+    --secondary-color: #2980b9;
+    --text-color: #ecf0f1;
+    --error-color: #e74c3c;
+    --success-color: #2ecc71;
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 15px;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(236, 240, 241, 0.2);
+    padding-bottom: 10px;
+}
+
+.status-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.button-group {
+    display: flex;
+    gap: 8px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+}
+
+.status.light {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #7f8c8d; /* Gray */
+    transition: background-color 0.3s ease;
+}
+
+.status.connecting.light { background-color: #f1c40f; } /* Yellow */
+.status.connected.light { background-color: var(--success-color); } /* Green */
+.status.error.light { background-color: var(--error-color); } /* Red */
+
+main#controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.source-control {
+    display: grid;
+    grid-template-columns: 50px 1fr 50px 60px;
+    align-items: center;
+    gap: 10px;
+}
+
+.source-control label {
+    font-weight: 500;
+    text-align: right;
+}
+
+.fader {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    background: #34495e;
+    outline: none;
+    border-radius: 4px;
+    transition: opacity 0.2s;
+}
+
+.fader::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--primary-color);
+    cursor: pointer;
+    border-radius: 50%;
+    border: 2px solid var(--text-color);
+}
+
+.fader::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: var(--primary-color);
+    cursor: pointer;
+    border-radius: 50%;
+    border: 2px solid var(--text-color);
+}
+
+.fader-value {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.solo-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.solo-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.solo-btn:active {
+    transform: translateY(1px);
+}
+
+footer {
+    margin-top: 10px;
+    min-height: 20px;
+}
+
+#error-message {
+    color: var(--error-color);
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.reconnect-btn {
+    background-color: var(--error-color);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+
+.reconnect-btn:hover:not(:disabled) {
+    background-color: #c0392b;
+}
+
+.reconnect-btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.reconnect-btn:disabled {
+    background-color: #7f8c8d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.reload-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+
+.reload-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.reload-btn:active {
+    transform: translateY(1px);
+}
