@@ -10,6 +10,55 @@ document.addEventListener('DOMContentLoaded', () => {
     const obs = new OBSWebSocket();
     let connectionInterval;
 
+    // --- フィルター存在確認用のリトライ関数 ---
+    const retryWithBackoff = async (operation, maxRetries = 5, initialDelay = 1000) => {
+        let delay = initialDelay;
+        let lastError;
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                return await operation();
+            } catch (error) {
+                lastError = error;
+                console.warn(`Attempt ${attempt}/${maxRetries} failed:`, error.message);
+
+                if (attempt < maxRetries) {
+                    console.log(`Retrying in ${delay}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2; // 指数バックオフ
+                }
+            }
+        }
+        throw lastError;
+    };
+
+    // --- フィルター存在確認関数 ---
+    const waitForFilter = async (sourceName, filterName, maxRetries = 5) => {
+        return retryWithBackoff(async () => {
+            try {
+                const response = await obs.call('GetSourceFilter', {
+                    sourceName: sourceName,
+                    filterName: filterName
+                });
+
+                if (!response.responseData || !response.responseData.filterSettings) {
+                    throw new Error(`Filter '${filterName}' not found on source '${sourceName}'`);
+                }
+
+                return response.responseData.filterSettings;
+            } catch (error) {
+                // ソース自体が存在しない場合はソースリストをチェック
+                if (error.message.includes('source') || error.code === 'SOURCE_NOT_FOUND') {
+                    console.log(`Source '${sourceName}' not found, checking available sources...`);
+                    const sourcesResponse = await obs.call('GetSceneList');
+                    const availableSources = sourcesResponse.responseData.scenes.map(scene => scene.sceneName);
+                    console.log('Available sources:', availableSources);
+                }
+                throw error;
+            }
+        }, maxRetries);
+    };
+
     // --- DOM要素の取得 ---
     const statusIndicator = document.getElementById('status-indicator');
     const statusText = document.getElementById('status-text');
@@ -130,22 +179,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentOpacities = {};
             for (const sourceName of SOURCE_NAMES) {
                 try {
-                    const response = await obs.call('GetSourceFilter', {
-                        sourceName: sourceName,
-                        filterName: FILTER_NAME
-                    });
-
-                    // フィルターが存在しない場合のエラーハンドリング
-                    if (!response.responseData || !response.responseData.filterSettings) {
-                        errorMessage.textContent = `フィルター '${FILTER_NAME}' がソース '${sourceName}' に見つかりません`;
-                        console.error(`Filter '${FILTER_NAME}' not found on source '${sourceName}'`);
-                        return;
-                    }
-
-                    currentOpacities[sourceName] = response.responseData.filterSettings.opacity || 0;
+                    const filterSettings = await waitForFilter(sourceName, FILTER_NAME);
+                    currentOpacities[sourceName] = filterSettings.opacity || 0;
                 } catch (filterError) {
-                    errorMessage.textContent = `ソース '${sourceName}' のフィルター取得に失敗: ${filterError.message}`;
-                    console.error(`Failed to get filter for ${sourceName}:`, filterError);
+                    errorMessage.textContent = `ソース '${sourceName}' のフィルター取得に失敗（リトライ後）: ${filterError.message}`;
+                    console.error(`Failed to get filter for ${sourceName} after retries:`, filterError);
                     return;
                 }
             }
@@ -227,29 +265,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const syncInitialState = async () => {
         for (const sourceName of SOURCE_NAMES) {
             try {
-                const response = await obs.call('GetSourceFilter', {
-                    sourceName: sourceName,
-                    filterName: FILTER_NAME
-                });
+                const filterSettings = await waitForFilter(sourceName, FILTER_NAME);
 
-                // フィルターが存在しない場合のエラーハンドリング
-                if (!response.responseData || !response.responseData.filterSettings) {
-                    const msg = `フィルター '${FILTER_NAME}' がソース '${sourceName}' に見つかりません`;
-                    errorMessage.textContent = msg;
-                    console.error(msg);
-                    continue;
-                }
-
-                if (typeof response.responseData.filterSettings.opacity === 'number') {
-                    const opacity = response.responseData.filterSettings.opacity;
+                if (typeof filterSettings.opacity === 'number') {
+                    const opacity = filterSettings.opacity;
                     const faderValue = Math.round(opacity * 100);
                     document.getElementById(`${sourceName}-fader`).value = faderValue;
                     document.getElementById(`${sourceName}-value`).textContent = `${faderValue}%`;
                 }
             } catch (error) {
-                 const msg = `ソース '${sourceName}' の初期状態取得に失敗: ${error.message}`;
-                 errorMessage.textContent = msg;
-                 console.warn(msg);
+                const msg = `ソース '${sourceName}' の初期状態取得に失敗（リトライ後）: ${error.message}`;
+                errorMessage.textContent = msg;
+                console.warn(msg);
             }
         }
     };
